@@ -159,8 +159,137 @@ else:
     print('\nThere is no significant association between any pair of features.')
 
 
-# In[ ]:
+# In[9 ]:
 
+from scipy.stats import chi2_contingency
 
+data = [
+    ('<=30', 'high', 'no', 'fair', 'no'),
+    ('<=30', 'high', 'no', 'excellent', 'no'),
+    ('31…40', 'high', 'no', 'fair', 'yes'),
+    ('>40', 'medium', 'no', 'fair', 'yes'),
+    ('>40', 'low', 'yes', 'fair', 'yes'),
+    ('>40', 'low', 'yes', 'excellent', 'no'),
+    ('31…40', 'low', 'yes', 'excellent', 'yes'),
+    ('<=30', 'medium', 'no', 'fair', 'no'),
+    ('<=30', 'low', 'yes', 'fair', 'yes'),
+    ('>40', 'medium', 'yes', 'fair', 'yes'),
+    ('<=30', 'medium', 'yes', 'excellent', 'yes'),
+    ('31…40', 'medium', 'no', 'excellent', 'yes'),
+    ('31…40', 'high', 'yes', 'fair', 'yes'),
+    ('>40', 'medium', 'no', 'excellent', 'no')
+]
 
+# Extracting the four features as separate lists
+age = [instance[0] for instance in data]
+income = [instance[1] for instance in data]
+student = [instance[2] for instance in data]
+credit_rating = [instance[3] for instance in data]
+buys_computer = [instance[4] for instance in data]
+
+# Creating a contingency table
+contingency_table = [
+    [sum(1 for a, i, s, c, b in data if a == age_val and i == income_val and s == student_val and c == credit_val and b == buys_val) for buys_val in set(buys_computer)]
+    for age_val in set(age)
+    for income_val in set(income)
+    for student_val in set(student)
+    for credit_val in set(credit_rating)
+]
+
+contingency_table = [row for row in contingency_table if sum(row) > 0]  # Remove empty rows
+
+# Performing the chi-square test
+chi2, p, _, _ = chi2_contingency(contingency_table)
+
+# Printing the results
+print(f"Chi-square value: {chi2}")
+print(f"P-value: {p}")
+
+# Checking the significance level (e.g., alpha = 0.05)
+alpha = 0.05
+if p < alpha:
+    print("There is significant evidence to reject the null hypothesis. The features are dependent.")
+else:
+    print("There is not enough evidence to reject the null hypothesis. The features are independent.")
+
+# In[10 ]:
+import pandas as pd
+from sklearn.naive_bayes import GaussianNB
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+
+#Load the table data
+table_data = {
+    'age': ['<=30', '<=30', '31-40', '>40', '>40', '>40', '31-40', '<=30', '<=30', '>40', '<=30', '31-40', '31-40', '>40'],
+    'income': ['high', 'high', 'high', 'medium', 'low', 'low', 'low', 'medium', 'low', 'medium', 'medium', 'medium', 'high', 'medium'],
+    'student': ['no', 'no', 'no', 'no', 'yes', 'yes', 'yes', 'no', 'yes', 'yes', 'yes', 'no', 'yes', 'no'],
+    'credit_rating': ['fair', 'excellent', 'fair', 'fair', 'fair', 'excellent', 'excellent', 'fair', 'fair', 'fair', 'excellent', 'excellent', 'fair', 'excellent'],
+    'buys_computer': ['no', 'no', 'yes', 'yes', 'yes', 'no', 'yes', 'no', 'yes', 'yes', 'yes', 'yes', 'yes', 'no']
+}
+
+df = pd.DataFrame(table_data)
+
+# Assuming 'buys_computer' is the target variable
+X = df.drop('buys_computer', axis=1)
+y = df['buys_computer']
+
+# Convert categorical variables to numerical using one-hot encoding
+X_encoded = pd.get_dummies(X)
+
+# Split the data into training and testing sets
+Tr_X, Te_X, Tr_y, Te_y = train_test_split(X_encoded, y, test_size=0.2, random_state=42)
+
+# Build and train the Naïve-Bayes classifier
+model = GaussianNB()
+model.fit(Tr_X, Tr_y)
+
+# Make predictions on the test set
+predictions = model.predict(Te_X)
+
+# Evaluate the accuracy of the model
+accuracy = accuracy_score(Te_y, predictions)
+print(f"Accuracy: {accuracy}")
+
+# In[11 ]:
+import numpy as np
+import pandas as pd
+df=pd.read_excel("embeddingsdatalabel.xlsx")
+df
+
+# In[12 ]:
+
+from sklearn.naive_bayes import GaussianNB
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, classification_report
+ 
+# Assuming you have a DataFrame df with your dataset
+# df = ...
+ 
+# Specify the features (X) and labels (y)
+features = ['embed_1', 'embed_2', 'embed_3', 'embed_4']
+target_variable = 'Label'
+ 
+X = df[features]
+y = df[target_variable]
+ 
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+ 
+# Build the Naïve-Bayes (NB) classifier
+model = GaussianNB()
+ 
+# Train the model on the training data
+model.fit(X_train, y_train)
+ 
+# Make predictions on the testing data
+y_pred = model.predict(X_test)
+ 
+# Evaluate the performance of the classifier
+accuracy = accuracy_score(y_test, y_pred)
+classification_report_str = classification_report(y_test, y_pred)
+ 
+# Print the results
+print(f"Accuracy: {accuracy}")
+print("Classification Report:")
+print(classification_report_str)
 
